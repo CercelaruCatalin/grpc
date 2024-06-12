@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+message User {
+  string username = 1;
+  string password = 2;
+}
+
+message ResultRegister {
+  string resultR = 1;
+}
+
+message ResultLogin {
+  string resultL = 1;
+}
+
+message File {
+  string contents = 1;
+  string XMLpath = 2;
+  string jsonName = 3;
+}
+
+service Conversion {
+  rpc performConversion(File) returns (File) {}
+}
+
+service LoginUser {
+  rpc loginUser(User) returns (ResultLogin) {}
+}
+
+service RegisterUser {
+  rpc registerUser(User) returns (ResultRegister) {}
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convert</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center" onload="checkLoggedIn()">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-96">
+        <h1 class="text-2xl font-bold mb-5 text-center">Convert XML to JSON</h1>
+        <form id="conversionForm" enctype="multipart/form-data">
+            <div class="mb-4 text-center">
+                <label for="xmlFile" class="block text-sm font-medium text-gray-700">XML File</label>
+                <!-- Apply Tailwind CSS classes to style the file input button -->
+                <div class="relative border border-gray-300 rounded-md bg-green-300">
+                    <input type="file" id="xmlFile" name="xmlFile" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".xml" required />
+                    <div class="flex items-center justify-between p-2">
+                        <span class="text-sm text-white truncate" id="selectedFileName">No file selected</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-4 text-center">
+                <label for="jsonName" class="block text-sm font-medium text-gray-700">JSON File Name</label>
+                <input type="text" id="jsonName" name="jsonName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Enter JSON File Name" required />
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700">Convert</button>
+        </form>
+    </div>
+
+    <script>
+        async function convert(event) {
+            event.preventDefault(); // Prevent form submission
+
+            const formData = new FormData(document.getElementById('conversionForm'));
+            console.log("Json: ", jsonName);
+            console.log("xml: ", xmlFile);
+
+            const response = await fetch('/api/convert', {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = formData.get('jsonName') + '.json';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                alert('Conversion successful. JSON file downloaded.');
+            } else {
+                const result = await response.text();
+                alert('Conversion failed: ' + result);
+            }
+        }
+
+        // Update the file name displayed when a file is selected
+        document.getElementById('xmlFile').addEventListener('change', function() {
+            const selectedFileName = document.getElementById('selectedFileName');
+            selectedFileName.textContent = this.files[0] ? this.files[0].name : 'No file selected';
+        });
+
+        function checkLoggedIn() {
+            if (!sessionStorage.getItem('loggedIn')) {
+                window.location.href = '/login';
+            }
+        }
+
+        document.getElementById('conversionForm').addEventListener('submit', convert);
+    </script>
+</body>
+</html>
